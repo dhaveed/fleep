@@ -10,6 +10,7 @@ export default function Header(props) {
       <View>
         <Text style={styles.headerTitle}>{props.title}</Text>
       </View>
+      {props.right}
      </View>
   );
 }

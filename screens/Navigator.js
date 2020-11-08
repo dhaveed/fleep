@@ -9,14 +9,37 @@ import Header from "../components/Header";
 
 const Stack = createStackNavigator();
 
+const headerOptions = {
+  headerStyle: {
+    borderBottomWidth: 0,
+    shadowColor: "transparent",
+    elevation: 0,
+  },
+  headerLeft: null,
+  headerTitleContainerStyle: {
+    flex: 1,
+  },
+};
+
 export default function Navigator() {
   const Back = ({ navigation }) => {
     return (
       <Feather
-        style={{ position: "absolute", left: 0 }}
+        style={{ position: "absolute", left: 10 }}
         name="chevron-left"
         size={24}
         onPress={() => navigation.goBack()}
+      />
+    );
+  };
+
+  const Info = ({ navigation }) => {
+    return (
+      <Feather
+        style={{ position: "absolute", right: 10 }}
+        name="info"
+        size={24}
+        onPress={() => console.log("Show about modal")}
       />
     );
   };
@@ -29,16 +52,9 @@ export default function Navigator() {
         options={({ navigation }) => {
           return {
             headerTitle: () => (
-              <Header title="Fleep" left={<Back navigation={navigation} />} />
+              <Header title="Fleep" right={<Info navigation={navigation} />} />
             ),
-            headerStyle: {
-              borderBottomWidth: 0,
-              shadowColor: "transparent",
-            },
-            headerLeft: null,
-            headerTitleContainerStyle: {
-              flex: 1,
-            },
+            ...headerOptions,
           };
         }}
         headerMode="none"
@@ -54,14 +70,7 @@ export default function Navigator() {
                 left={<Back navigation={navigation} />}
               />
             ),
-            headerStyle: {
-              borderBottomWidth: 0,
-              shadowColor: "transparent",
-            },
-            headerLeft: null,
-            headerTitleContainerStyle: {
-              flex: 1,
-            },
+            ...headerOptions,
           };
         }}
       />

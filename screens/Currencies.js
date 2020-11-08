@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
-// import { styles } from '../styles';
 
 const CURRENCIES = [
   {
@@ -58,7 +57,6 @@ const CURRENCIES = [
 ];
 
 export default function Currencies() {
-
   const [selected, setSelected] = useState(2);
 
   const Search = () => {
@@ -67,7 +65,6 @@ export default function Currencies() {
         <Feather name="search" size={24} color={Colors.light} />
         <TextInput
           placeholder="Currency name or shortcode"
-          // placeholder="Search"
           style={styles.searchInput}
           placeholderTextColor={Colors.light}
           keyboardAppearance="default"
