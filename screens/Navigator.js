@@ -52,7 +52,7 @@ export default function Navigator() {
         options={({ navigation }) => {
           return {
             headerTitle: () => (
-              <Header title="Fleep" right={<Info navigation={navigation} />} />
+              <Header title="Fleep Currency" right={<Info navigation={navigation} />} />
             ),
             ...headerOptions,
           };

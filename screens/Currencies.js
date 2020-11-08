@@ -188,3 +188,15 @@ const styles = StyleSheet.create({
     color: Colors.dark,
   },
 });
+
+/*
+
+  TODOs
+
+  [] Integrate live data (currency list)
+  [] Currency Filter
+  [] Handle incoming route params
+  [] Implement recent currencies array
+  [] Handle currency selection with live data
+
+*/
