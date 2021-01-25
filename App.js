@@ -26,7 +26,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    getInitialPair();
+    // getInitialPair();
+    getAllCurrencies();
   }, []);
 
   const getAllCurrencies = async () => {
