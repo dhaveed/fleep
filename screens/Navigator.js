@@ -46,20 +46,7 @@ export default function Navigator() {
 
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Flipper"
-        component={Flipper}
-        options={({ navigation }) => {
-          return {
-            headerTitle: () => (
-              <Header title="Fleep Currency" right={<Info navigation={navigation} />} />
-            ),
-            ...headerOptions,
-          };
-        }}
-        headerMode="none"
-      />
-      <Stack.Screen
+    <Stack.Screen
         name="Currencies"
         component={Currencies}
         options={({ navigation }) => {
@@ -74,6 +61,34 @@ export default function Navigator() {
           };
         }}
       />
+      <Stack.Screen
+        name="Flipper"
+        component={Flipper}
+        options={({ navigation }) => {
+          return {
+            headerTitle: () => (
+              <Header title="Fleep Currency" right={<Info navigation={navigation} />} />
+            ),
+            ...headerOptions,
+          };
+        }}
+        headerMode="none"
+      />
+      {/* <Stack.Screen
+        name="Currencies"
+        component={Currencies}
+        options={({ navigation }) => {
+          return {
+            headerTitle: () => (
+              <Header
+                title="Choose a currency"
+                left={<Back navigation={navigation} />}
+              />
+            ),
+            ...headerOptions,
+          };
+        }}
+      /> */}
     </Stack.Navigator>
   );
 }

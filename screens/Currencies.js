@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from "react-native";
+import Image from 'react-native-remote-svg';
 import { Feather } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
+import { useContext } from "react";
+import ConversionContext from "../components/Converter/Converter";
 
 const CURRENCIES = [
   {
@@ -59,6 +62,8 @@ const CURRENCIES = [
 export default function Currencies() {
   const [selected, setSelected] = useState(2);
 
+  const conversion = useContext(ConversionContext);
+
   const Search = () => {
     return (
       <View style={styles.searchWrap}>
@@ -78,12 +83,17 @@ export default function Currencies() {
   const Currency = ({ item }) => {
     return (
       <TouchableOpacity style={styles.currency} activeOpacity={0.4} onPress={() => setSelected(item.id)}>
-        <View style={styles.currencyFlag}></View>
+        <View style={styles.currencyFlag}>
+          <Image source={{
+            uri: item[0]
+          }} style={styles.currencyFlag}/>
+        </View>
         <Text style={styles.currencyShortcode}>
-          {item.shortcode}
+          {/* {item.currency.code} */}
+          {/* {item[0]} */}
         </Text>
         <Text style={styles.currencyName}>
-          {item.name}
+          {item[0]}
         </Text>
         {selected == item.id && (<Feather name="check" size={18} color={Colors.primary} />)}
       </TouchableOpacity>
@@ -108,8 +118,8 @@ export default function Currencies() {
         <Text style={styles.sectionTitle}>
           All Currencies
         </Text>
-        {CURRENCIES.map((item) => (
-          <Currency item={item} key={item.id} />
+        {conversion.allCurrencies.map((item, index) => (
+          <Currency item={item} key={index} />
         ))}
       </View>
     )
@@ -119,6 +129,7 @@ export default function Currencies() {
     <View style={styles.container}>
       <Search />
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* <Text>{JSON.stringify(conversion.allCurrencies)}</Text> */}
         <RecentCurrencies />
         <AllCurrencies />
       </ScrollView>
