@@ -12,29 +12,61 @@ import { Feather, AntDesign } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
 import { useContext } from "react";
 import ConversionContext from "../components/Converter/Converter";
+import { useEffect } from "react";
 
 export default function Currencies({ route }) {
-  const [selected, setSelected] = useState();
+  const [selected, setSelected] = useState({});
   const [filtered, setFiltered] = useState(null);
   const [searchParam, setSearchParam] = useState("");
 
-  const { conversion } = useContext(ConversionContext);
-  const allCurrencies = conversion.allCurrencies;
+  useEffect(() => {
+    if (route.params) {
+      var currency = { ...route.params };
+      delete currency.type;
+      console.log("Default selected: " + JSON.stringify(currency));
+      setSelected(currency);
+    }
+  }, []);
 
-  allCurrencies.sort(function (a, b) {
+  const { conversion } = useContext(ConversionContext);
+  const { conversionPair } = useContext(ConversionContext);
+  const { setConversionPair } = useContext(ConversionContext);
+  let currencyList = conversion.allCurrencies.sort(function (a, b) {
     var textA = a.name.toUpperCase();
     var textB = b.name.toUpperCase();
     return textA < textB ? -1 : textA > textB ? 1 : 0;
+  });
+
+  const allCurrencies = currencyList.filter((item) => {
+   return 'currency' in item && item;
   });
 
   const doFilter = (param) => {
     setSearchParam(param);
     const result = allCurrencies.filter((item) => {
       const itemData = `${item.name.toLowerCase()}`;
+      const currencyData = `${item.currency.toLowerCase()}`;
       const textData = param.toLowerCase();
-      return itemData.indexOf(textData) > -1;
+      // return itemData.indexOf(textData) > -1;
+      return (itemData.indexOf(textData) > -1) || (currencyData.indexOf(textData) > -1);
     });
     setFiltered(result);
+  };
+
+  const pickCurrency = (item) => {
+    setSelected(item);
+    console.log(route.params);
+    if (route.params.type === "base") {
+      setConversionPair({
+        ...conversionPair,
+        base: item,
+      });
+    } else {
+      setConversionPair({
+        ...conversionPair,
+        target: item,
+      });
+    }
   };
 
   const Currency = (item) => {
@@ -42,7 +74,7 @@ export default function Currencies({ route }) {
       <TouchableOpacity
         style={styles.currency}
         activeOpacity={0.4}
-        onPress={() => setSelected(item)}
+        onPress={() => pickCurrency(item)}
       >
         <View style={styles.currencyFlag}>
           <Text style={{ fontSize: 26, marginTop: -1 }}>
@@ -51,7 +83,7 @@ export default function Currencies({ route }) {
         </View>
         <Text style={styles.currencyShortcode}>{item.currency}</Text>
         <Text style={styles.currencyName}>{item.name}</Text>
-        {selected == item && (
+        {selected.name == item.name && (
           <Feather name="check" size={18} color={Colors.primary} />
         )}
       </TouchableOpacity>
@@ -86,7 +118,7 @@ export default function Currencies({ route }) {
       <View style={styles.searchWrap}>
         <Feather name="search" size={18} color={"#000"} />
         <TextInput
-          placeholder="Search by country name..."
+          placeholder="Country name or currency code..."
           style={styles.searchInput}
           placeholderTextColor={"#30475e50"}
           // returnKeyType="done"
@@ -103,9 +135,6 @@ export default function Currencies({ route }) {
           />
         )}
       </View>
-      <Text>
-        {JSON.stringify(route.params)}
-      </Text>
       {/* <ScrollView showsVerticalScrollIndicator={false}>
         <RecentCurrencies />
         <AllCurrencies />
@@ -186,8 +215,8 @@ const styles = StyleSheet.create({
 
   [x] Integrate live data (currency list)
   [x] Currency Filter
-  [] Handle incoming route params
-  [] Implement recent currencies array
+  [x] Handle incoming route params
   [x] Handle currency selection with live data
   [x] Reorder API currencies
+  [] Implement recent currencies array
 */

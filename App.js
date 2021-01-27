@@ -43,7 +43,7 @@ export default function App() {
       "https://countriesnow.space/api/v0.1/countries/info?returns=currency,unicodeFlag"
     );
     let res = await req.json();
-    console.log(res);
+    // console.log(res);
     setAllCurrencies(!!res.data && res.data);
   };
 

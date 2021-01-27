@@ -12,38 +12,50 @@ import Dash from "react-native-dash";
 import Colors from "../constants/Colors";
 import { useContext } from "react";
 import ConversionContext from "../components/Converter/Converter";
+import { useEffect } from "react";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function Flipper({ navigation }) {
-  const [baseValue, setBaseValue] = useState(1);
-  const [baseCurrency, setBaseCurrency] = useState("USD");
-  const [targetValue, setTargetValue] = useState(0);
-  const [targetCurrency, setTargetCurrency] = useState("GBP");
+  const isFocused = useIsFocused();
 
-  const getExchangeRate = async () => {
-    let req = await fetch(
-      "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/USD/NGN"
-    );
-    let res = await req.json();
-    if (res.result === "success") {
-      conversion.base.code = res.base_code;
-      conversion.target.code = res.target_code;
-      conversion.rate = res.conversion_rate;
-      setInitialPair(res);
-    }
-    console.log(JSON.stringify(res));
-  };
+  const [baseValue, setBaseValue] = useState(1);
+  const [targetValue, setTargetValue] = useState(0);
+  const [conversionRate, setConversionRate] = useState(4.926);
 
   const { conversion } = useContext(ConversionContext);
   const { conversionPair } = useContext(ConversionContext);
   const { setConversionPair } = useContext(ConversionContext);
+
+  useEffect(() => {
+    if(isFocused){
+      getExchangeRate();
+    }
+  }, [isFocused]);
+
+  const getExchangeRate = async () => {
+    let conversionUri = "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/" + conversionPair.base.currency + "/" + conversionPair.target.currency;
+    console.log(conversionUri);
+    // let req = await fetch(
+    //   "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/" + conversionPair.base.currency + "/" + conversionPair.target.currency
+    // );
+    // let res = await req.json();
+    // if (res.result === "success") {
+    //   conversion.base.code = res.base_code;
+    //   conversion.target.code = res.target_code;
+    //   conversion.rate = res.conversion_rate;
+    //   setInitialPair(res);
+    // }
+    // console.log(JSON.stringify(res));
+  };
 
   const switchCurrencies = () => {
     let swapped = {
       base: conversionPair.target,
       target: conversionPair.base,
     };
-    console.log(swapped);
+    var newRate = (1/conversionRate).toFixed(3);
     setConversionPair(swapped);
+    setConversionRate(newRate);
   };
 
   const Currency = ({ item }) => {
@@ -58,10 +70,10 @@ export default function Flipper({ navigation }) {
         }
       >
         <View style={styles.currencyFlag}>
-          <Text style={{ fontSize: 32, marginTop: -5 }}>{item.flag}</Text>
+          <Text style={{ fontSize: 32, marginTop: -5 }}>{item.unicodeFlag}</Text>
         </View>
         <View style={styles.currencyMeta}>
-          <Text style={styles.currencyShortcode}>{item.shortcode}</Text>
+          <Text style={styles.currencyShortcode}>{item.currency}</Text>
           <Text style={styles.currencyName}>{item.name}</Text>
         </View>
       </TouchableOpacity>
@@ -75,10 +87,9 @@ export default function Flipper({ navigation }) {
           <View style={styles.currencyCardCurrencyWrap}>
             <Currency
               item={{
-                shortcode: item.code,
-                id: 2,
                 name: item.name,
-                flag: item.flag,
+                currency: item.currency,
+                unicodeFlag: item.unicodeFlag,
                 type: item.type
               }}
             />
@@ -94,6 +105,7 @@ export default function Flipper({ navigation }) {
             keyboardType="decimal-pad"
             style={styles.inputStyles}
             placeholder="1.00"
+            editable={item.type === "base"}
           />
           <Text style={styles.currencySymbol}>$</Text>
         </View>
@@ -108,8 +120,8 @@ export default function Flipper({ navigation }) {
         <CurrencyCard
           item={{
             name: conversionPair.base.name,
-            code: conversionPair.base.currency,
-            flag: conversionPair.base.unicodeFlag,
+            currency: conversionPair.base.currency,
+            unicodeFlag: conversionPair.base.unicodeFlag,
             type: "base"
           }}
         />
@@ -131,8 +143,8 @@ export default function Flipper({ navigation }) {
         <CurrencyCard
           item={{
             name: conversionPair.target.name,
-            code: conversionPair.target.currency,
-            flag: conversionPair.target.unicodeFlag,
+            currency: conversionPair.target.currency,
+            unicodeFlag: conversionPair.target.unicodeFlag,
             type: "target"
           }}
         />
@@ -145,7 +157,7 @@ export default function Flipper({ navigation }) {
               Conversion Rate &bull;
             </Text>
             <Text style={[styles.bodyText]}>
-              1 {conversionPair.base.currency} &#8776; {conversion.rate}{" "}
+              1 {conversionPair.base.currency} &#8776; {conversionRate}{" "}
               {conversionPair.target.currency}
             </Text>
           </View>
@@ -344,9 +356,9 @@ const styles = StyleSheet.create({
 /*
   TODOs
   [] Handle source currency/value input
-  [] Fix target value overflow
-  [] Modify colors (to make them more visible)
+  [x] Fix target value overflow
+  [x] Modify colors (to make them more visible)
   [] Implement actual data for conversion
-  [] Implement currency switch
+  [x] Implement currency switch
   [] Add info modal
 */
