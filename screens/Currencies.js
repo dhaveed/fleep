@@ -23,7 +23,6 @@ export default function Currencies({ route }) {
     if (route.params) {
       var currency = { ...route.params };
       delete currency.type;
-      console.log("Default selected: " + JSON.stringify(currency));
       setSelected(currency);
     }
   }, []);
@@ -55,7 +54,6 @@ export default function Currencies({ route }) {
 
   const pickCurrency = (item) => {
     setSelected(item);
-    console.log(route.params);
     if (route.params.type === "base") {
       setConversionPair({
         ...conversionPair,

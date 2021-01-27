@@ -14,8 +14,7 @@ export function conversionPairReducer(state, item) {
 }
 
 export default function App() {
-  const [allCurrencies, setAllCurrencies] = useState([]); // each should include { flag, code, name, symbol }
-  // const [initialPair, setInitialPair] = useState();
+  const [allCurrencies, setAllCurrencies] = useState([]);
 
   const initialPair = {
     base: { 
@@ -30,11 +29,9 @@ export default function App() {
     },
   };
 
-  // const [conversionPair, setConversionPair] = useReducer(conversionPairReducer, initialPair);
   const [conversionPair, setConversionPair] = useState(initialPair);
 
   useEffect(() => {
-    // getInitialPair();
     getAllCurrencies();
   }, []);
 
@@ -43,24 +40,12 @@ export default function App() {
       "https://countriesnow.space/api/v0.1/countries/info?returns=currency,unicodeFlag"
     );
     let res = await req.json();
-    // console.log(res);
     setAllCurrencies(!!res.data && res.data);
   };
 
   let conversion = {
     allCurrencies: allCurrencies,
-    base: {
-      code: "USD",
-      name: "United States Dollar",
-    },
-    target: {
-      code: "GBP",
-      name: "British Pound",
-    },
-    rate: 0.73,
   };
-
-  // console.log(JSON.stringify(conversion));
 
   return (
     <ConversionContext.Provider

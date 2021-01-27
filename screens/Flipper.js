@@ -18,34 +18,32 @@ import { useIsFocused } from "@react-navigation/native";
 export default function Flipper({ navigation }) {
   const isFocused = useIsFocused();
 
-  const [baseValue, setBaseValue] = useState(1);
-  const [targetValue, setTargetValue] = useState(0);
-  const [conversionRate, setConversionRate] = useState(4.926);
-
-  const { conversion } = useContext(ConversionContext);
+  const [baseValue, setBaseValue] = useState("1.00");
+  const [targetValue, setTargetValue] = useState(1.0);
+  const [conversionRate, setConversionRate] = useState(0.73);
   const { conversionPair } = useContext(ConversionContext);
   const { setConversionPair } = useContext(ConversionContext);
 
   useEffect(() => {
-    if(isFocused){
+    if (isFocused) {
       getExchangeRate();
+      
     }
   }, [isFocused]);
 
   const getExchangeRate = async () => {
-    let conversionUri = "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/" + conversionPair.base.currency + "/" + conversionPair.target.currency;
-    console.log(conversionUri);
-    // let req = await fetch(
-    //   "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/" + conversionPair.base.currency + "/" + conversionPair.target.currency
-    // );
-    // let res = await req.json();
-    // if (res.result === "success") {
-    //   conversion.base.code = res.base_code;
-    //   conversion.target.code = res.target_code;
-    //   conversion.rate = res.conversion_rate;
-    //   setInitialPair(res);
-    // }
-    // console.log(JSON.stringify(res));
+    let conversionUri =
+      "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/" +
+      conversionPair.base.currency +
+      "/" +
+      conversionPair.target.currency;
+    let req = await fetch(conversionUri);
+    let res = await req.json();
+    if (res.result === "success") {
+      setConversionRate((res.conversion_rate).toFixed(2));
+      convert(baseValue);
+      setTargetValue((baseValue * res.conversion_rate).toFixed(2));
+    }
   };
 
   const switchCurrencies = () => {
@@ -53,9 +51,19 @@ export default function Flipper({ navigation }) {
       base: conversionPair.target,
       target: conversionPair.base,
     };
-    var newRate = (1/conversionRate).toFixed(3);
+    var newRate = (1 / conversionRate).toFixed(2);
     setConversionPair(swapped);
     setConversionRate(newRate);
+
+    let tVal = baseValue;
+    setBaseValue(targetValue);
+    setTargetValue(tVal);
+  };
+
+  const convert = (value) => {
+    setBaseValue(value);
+    let result = (value * conversionRate).toFixed(2);
+    setTargetValue(result);
   };
 
   const Currency = ({ item }) => {
@@ -65,12 +73,14 @@ export default function Flipper({ navigation }) {
         activeOpacity={0.4}
         onPress={() =>
           navigation.navigate("Currencies", {
-            ...item
+            ...item,
           })
         }
       >
         <View style={styles.currencyFlag}>
-          <Text style={{ fontSize: 32, marginTop: -5 }}>{item.unicodeFlag}</Text>
+          <Text style={{ fontSize: 32, marginTop: -5 }}>
+            {item.unicodeFlag}
+          </Text>
         </View>
         <View style={styles.currencyMeta}>
           <Text style={styles.currencyShortcode}>{item.currency}</Text>
@@ -80,51 +90,72 @@ export default function Flipper({ navigation }) {
     );
   };
 
-  const CurrencyCard = ({ item }) => {
-    return (
-      <View style={styles.currencyCard}>
-        <TouchableOpacity style={styles.currencyCardHeading}>
-          <View style={styles.currencyCardCurrencyWrap}>
-            <Currency
-              item={{
-                name: item.name,
-                currency: item.currency,
-                unicodeFlag: item.unicodeFlag,
-                type: item.type
-              }}
-            />
-          </View>
-          <View style={styles.currencyCardArrowWrap}>
-            <Feather name="chevron-right" color={Colors.primary} size={20} />
-          </View>
-        </TouchableOpacity>
+  // const CurrencyCard = ({ item, children }) => {
+  //   return (
+  //     <View style={styles.currencyCard}>
+  //       <TouchableOpacity style={styles.currencyCardHeading}>
+  //         <View style={styles.currencyCardCurrencyWrap}>
+  //           <Currency
+  //             item={{
+  //               name: item.name,
+  //               currency: item.currency,
+  //               unicodeFlag: item.unicodeFlag,
+  //               type: item.type,
+  //             }}
+  //           />
+  //         </View>
+  //         <View style={styles.currencyCardArrowWrap}>
+  //           <Feather name="chevron-right" color={Colors.primary} size={20} />
+  //         </View>
+  //       </TouchableOpacity>
 
-        <View style={styles.currencyCardInputWrap}>
-          <TextInput
-            value={"1.00"}
-            keyboardType="decimal-pad"
-            style={styles.inputStyles}
-            placeholder="1.00"
-            editable={item.type === "base"}
-          />
-          <Text style={styles.currencySymbol}>$</Text>
-        </View>
-      </View>
-    );
-  };
+  //       <View style={styles.currencyCardInputWrap}>
+  //         {item.type === "base" ? (
+  //           children
+  //         ) : (
+  //           <Text style={styles.inputStyles}>{targetValue}</Text>
+  //         )}
+  //         <Text style={styles.currencySymbol}>$</Text>
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollViewStyles}>
-        {/* <Text>{JSON.stringify(conversionPair)}</Text> */}
-        <CurrencyCard
-          item={{
-            name: conversionPair.base.name,
-            currency: conversionPair.base.currency,
-            unicodeFlag: conversionPair.base.unicodeFlag,
-            type: "base"
-          }}
-        />
+        {/* Currency Card */}
+        <View style={styles.currencyCard}>
+          <TouchableOpacity style={styles.currencyCardHeading}>
+            <View style={styles.currencyCardCurrencyWrap}>
+              <Currency
+                item={{
+                  name: conversionPair.base.name,
+                  currency: conversionPair.base.currency,
+                  unicodeFlag: conversionPair.base.unicodeFlag,
+                  type: "base",
+                }}
+              />
+            </View>
+            <View style={styles.currencyCardArrowWrap}>
+              <Feather name="chevron-right" color={Colors.primary} size={20} />
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.currencyCardInputWrap}>
+            <TextInput
+              defaultValue={baseValue}
+              keyboardType="decimal-pad"
+              style={styles.inputStyles}
+              placeholder="1.00"
+              onChangeText={(val) => convert(val)}
+            />
+            {/* <Text style={styles.currencySymbol}>$</Text> */}
+            <FontAwesome5 name="money-bill-wave-alt" size={14} color={Colors.muted} />
+          </View>
+        </View>
+
+        {/* End Currency Card */}
 
         <View style={styles.buttonsWrap}>
           <View style={styles.equalButtonWrap}>
@@ -140,14 +171,32 @@ export default function Flipper({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <CurrencyCard
-          item={{
-            name: conversionPair.target.name,
-            currency: conversionPair.target.currency,
-            unicodeFlag: conversionPair.target.unicodeFlag,
-            type: "target"
-          }}
-        />
+        {/* Currency Card */}
+        <View style={styles.currencyCard}>
+          <TouchableOpacity style={styles.currencyCardHeading}>
+            <View style={styles.currencyCardCurrencyWrap}>
+              <Currency
+                item={{
+                  name: conversionPair.target.name,
+                  currency: conversionPair.target.currency,
+                  unicodeFlag: conversionPair.target.unicodeFlag,
+                  type: "target",
+                }}
+              />
+            </View>
+            <View style={styles.currencyCardArrowWrap}>
+              <Feather name="chevron-right" color={Colors.primary} size={20} />
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.currencyCardInputWrap}>
+            <Text style={styles.inputStyles}>{targetValue}</Text>
+            {/* <Text style={styles.currencySymbol}>$</Text> */}
+            <FontAwesome5 name="money-bill-wave-alt" size={14} color={Colors.muted} />
+          </View>
+        </View>
+
+        {/* End Currency Card */}
 
         <View style={{ marginTop: 30 }}>
           <View
@@ -355,10 +404,10 @@ const styles = StyleSheet.create({
 
 /*
   TODOs
-  [] Handle source currency/value input
+  [x] Handle source currency/value input
   [x] Fix target value overflow
   [x] Modify colors (to make them more visible)
-  [] Implement actual data for conversion
+  [x] Implement actual data for conversion
   [x] Implement currency switch
   [] Add info modal
 */
