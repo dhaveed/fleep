@@ -46,28 +46,16 @@ export default function Navigator() {
 
   return (
     <Stack.Navigator>
-    {/* <Stack.Screen
-        name="Currencies"
-        component={Currencies}
-        options={({ navigation }) => {
-          return {
-            headerTitle: () => (
-              <Header
-                title="Choose a currency"
-                left={<Back navigation={navigation} />}
-              />
-            ),
-            ...headerOptions,
-          };
-        }}
-      /> */}
       <Stack.Screen
         name="Flipper"
         component={Flipper}
         options={({ navigation }) => {
           return {
             headerTitle: () => (
-              <Header title="Fleep Currency" right={<Info navigation={navigation} />} />
+              <Header
+                title="Fleep Currency"
+                // right={<Info navigation={navigation} />}
+              />
             ),
             ...headerOptions,
           };
