@@ -1,138 +1,116 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from "react-native";
-import Image from 'react-native-remote-svg';
-import { Feather } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  FlatList,
+} from "react-native";
+import { Feather, AntDesign } from "@expo/vector-icons";
 import Colors from "../constants/Colors";
 import { useContext } from "react";
 import ConversionContext from "../components/Converter/Converter";
 
-const CURRENCIES = [
-  {
-    id: 1,
-    name: "United States Dollar",
-    shortcode: "USD"
-  },
-  {
-    id: 2,
-    name: "Australian Dollar",
-    shortcode: "AUD"
-  },
-  {
-    id: 3,
-    name: "Bulgarian Lev",
-    shortcode: "BGN"
-  },
-  {
-    id: 4,
-    name: "Brazilian Real",
-    shortcode: "BRL"
-  },
-  {
-    id: 5,
-    name: "Canadian Dollar",
-    shortcode: "CAD"
-  },
-  {
-    id: 6,
-    name: "Czech Koruna",
-    shortcode: "CZK"
-  },
-  {
-    id: 7,
-    name: "Danish Krone",
-    shortcode: "DKK"
-  },
-  {
-    id: 8,
-    name: "Euro",
-    shortcode: "EUR"
-  },
-  {
-    id: 9,
-    name: "British Pound",
-    shortcode: "GBP"
-  },
-  {
-    id: 10,
-    name: "Hungarian Forint",
-    shortcode: "HUF"
-  },
-];
+export default function Currencies({ route }) {
+  const [selected, setSelected] = useState();
+  const [filtered, setFiltered] = useState(null);
+  const [searchParam, setSearchParam] = useState("");
 
-export default function Currencies() {
-  const [selected, setSelected] = useState(2);
+  const { conversion } = useContext(ConversionContext);
+  const allCurrencies = conversion.allCurrencies;
 
-  const conversion = useContext(ConversionContext);
+  allCurrencies.sort(function (a, b) {
+    var textA = a.name.toUpperCase();
+    var textB = b.name.toUpperCase();
+    return textA < textB ? -1 : textA > textB ? 1 : 0;
+  });
 
-  const Search = () => {
-    return (
-      <View style={styles.searchWrap}>
-        <Feather name="search" size={24} color={Colors.light} />
-        <TextInput
-          placeholder="Currency name or shortcode"
-          style={styles.searchInput}
-          placeholderTextColor={Colors.light}
-          keyboardAppearance="default"
-          returnKeyType="done"
-          autoCorrect={false}
-        />
-      </View>
-    );
+  const doFilter = (param) => {
+    setSearchParam(param);
+    const result = allCurrencies.filter((item) => {
+      const itemData = `${item.name.toLowerCase()}`;
+      const textData = param.toLowerCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setFiltered(result);
   };
 
-  const Currency = ({ item }) => {
+  const Currency = (item) => {
     return (
-      <TouchableOpacity style={styles.currency} activeOpacity={0.4} onPress={() => setSelected(item.id)}>
+      <TouchableOpacity
+        style={styles.currency}
+        activeOpacity={0.4}
+        onPress={() => setSelected(item)}
+      >
         <View style={styles.currencyFlag}>
-          <Image source={{
-            uri: item[0]
-          }} style={styles.currencyFlag}/>
+          <Text style={{ fontSize: 26, marginTop: -1 }}>
+            {item.unicodeFlag}
+          </Text>
         </View>
-        <Text style={styles.currencyShortcode}>
-          {/* {item.currency.code} */}
-          {/* {item[0]} */}
-        </Text>
-        <Text style={styles.currencyName}>
-          {item[0]}
-        </Text>
-        {selected == item.id && (<Feather name="check" size={18} color={Colors.primary} />)}
+        <Text style={styles.currencyShortcode}>{item.currency}</Text>
+        <Text style={styles.currencyName}>{item.name}</Text>
+        {selected == item && (
+          <Feather name="check" size={18} color={Colors.primary} />
+        )}
       </TouchableOpacity>
-    )
+    );
   };
 
   const RecentCurrencies = () => {
     return (
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          Recent Currencies
-        </Text>
+        <Text style={styles.sectionTitle}>Recent Currencies</Text>
         <Currency item={{ name: "British Pound", shortcode: "GBP" }} />
         <Currency item={{ name: "Euro", shortcode: "EUR" }} />
       </View>
-    )
+    );
   };
-  
+
   const AllCurrencies = () => {
     return (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>
-          All Currencies
-        </Text>
-        {conversion.allCurrencies.map((item, index) => (
-          <Currency item={item} key={index} />
-        ))}
+      <View style={[styles.section, { flex: 1 }]}>
+        <Text style={styles.sectionTitle}>All Currencies</Text>
+        <FlatList
+          data={searchParam.length === 0 ? allCurrencies : filtered}
+          renderItem={({ item, index }) => Currency(item)}
+          keyExtractor={(item, index) => index.toString()}
+        />
       </View>
-    )
+    );
   };
 
   return (
     <View style={styles.container}>
-      <Search />
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* <Text>{JSON.stringify(conversion.allCurrencies)}</Text> */}
+      <View style={styles.searchWrap}>
+        <Feather name="search" size={18} color={"#000"} />
+        <TextInput
+          placeholder="Search by country name..."
+          style={styles.searchInput}
+          placeholderTextColor={"#30475e50"}
+          // returnKeyType="done"
+          autoCorrect={false}
+          value={searchParam}
+          onChangeText={(val) => doFilter(val)}
+        />
+        {searchParam.length > 0 && (
+          <AntDesign
+            name="closecircle"
+            color={Colors.muted}
+            size={16}
+            onPress={() => setSearchParam("")}
+          />
+        )}
+      </View>
+      <Text>
+        {JSON.stringify(route.params)}
+      </Text>
+      {/* <ScrollView showsVerticalScrollIndicator={false}>
         <RecentCurrencies />
         <AllCurrencies />
-      </ScrollView>
+      </ScrollView> */}
+      <AllCurrencies />
     </View>
   );
 }
@@ -141,22 +119,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFF",
-    padding: 30,
+    paddingHorizontal: 30,
     paddingTop: 10,
   },
   searchWrap: {
-    paddingVertical: 10,
+    paddingVertical: 15,
     paddingHorizontal: 15,
-    backgroundColor: Colors.pale,
-    borderRadius: 25,
+    borderRadius: 8,
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 30,
+    backgroundColor: "#f5f4f4",
   },
   searchInput: {
     marginLeft: 8,
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
   },
   section: {
     marginBottom: 40,
@@ -181,7 +159,9 @@ const styles = StyleSheet.create({
     width: 35,
     height: 25,
     borderRadius: 5,
-    backgroundColor: "#eee",
+    // backgroundColor: "#eee",
+    alignItems: "center",
+    justifyContent: "center",
   },
   currencyShortcode: {
     marginLeft: 12,
@@ -204,10 +184,10 @@ const styles = StyleSheet.create({
 
   TODOs
 
-  [] Integrate live data (currency list)
-  [] Currency Filter
+  [x] Integrate live data (currency list)
+  [x] Currency Filter
   [] Handle incoming route params
   [] Implement recent currencies array
-  [] Handle currency selection with live data
-
+  [x] Handle currency selection with live data
+  [x] Reorder API currencies
 */

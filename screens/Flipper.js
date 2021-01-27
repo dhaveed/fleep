@@ -19,21 +19,52 @@ export default function Flipper({ navigation }) {
   const [targetValue, setTargetValue] = useState(0);
   const [targetCurrency, setTargetCurrency] = useState("GBP");
 
-  const conversion = useContext(ConversionContext);
+  const getExchangeRate = async () => {
+    let req = await fetch(
+      "https://v6.exchangerate-api.com/v6/14d17e97f094da5cb79b81ef/pair/USD/NGN"
+    );
+    let res = await req.json();
+    if (res.result === "success") {
+      conversion.base.code = res.base_code;
+      conversion.target.code = res.target_code;
+      conversion.rate = res.conversion_rate;
+      setInitialPair(res);
+    }
+    console.log(JSON.stringify(res));
+  };
+
+  const { conversion } = useContext(ConversionContext);
+  const { conversionPair } = useContext(ConversionContext);
+  const { setConversionPair } = useContext(ConversionContext);
+
+  const switchCurrencies = () => {
+    let swapped = {
+      base: conversionPair.target,
+      target: conversionPair.base,
+    };
+    console.log(swapped);
+    setConversionPair(swapped);
+  };
 
   const Currency = ({ item }) => {
     return (
-      <View
+      <TouchableOpacity
         style={styles.currency}
         activeOpacity={0.4}
-        // onPress={() => navigation.navigate("Currencies")}
+        onPress={() =>
+          navigation.navigate("Currencies", {
+            ...item
+          })
+        }
       >
-        <View style={styles.currencyFlag}></View>
+        <View style={styles.currencyFlag}>
+          <Text style={{ fontSize: 32, marginTop: -5 }}>{item.flag}</Text>
+        </View>
         <View style={styles.currencyMeta}>
           <Text style={styles.currencyShortcode}>{item.shortcode}</Text>
           <Text style={styles.currencyName}>{item.name}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -42,7 +73,15 @@ export default function Flipper({ navigation }) {
       <View style={styles.currencyCard}>
         <TouchableOpacity style={styles.currencyCardHeading}>
           <View style={styles.currencyCardCurrencyWrap}>
-            <Currency item={{ shortcode: item.code, id: 2, name: item.name }} />
+            <Currency
+              item={{
+                shortcode: item.code,
+                id: 2,
+                name: item.name,
+                flag: item.flag,
+                type: item.type
+              }}
+            />
           </View>
           <View style={styles.currencyCardArrowWrap}>
             <Feather name="chevron-right" color={Colors.primary} size={20} />
@@ -55,7 +94,6 @@ export default function Flipper({ navigation }) {
             keyboardType="decimal-pad"
             style={styles.inputStyles}
             placeholder="1.00"
-            // placeholder="Base Currency"
           />
           <Text style={styles.currencySymbol}>$</Text>
         </View>
@@ -66,19 +104,38 @@ export default function Flipper({ navigation }) {
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollViewStyles}>
-        <CurrencyCard item={{ name: conversion.base.name, code: conversion.base.code }} />
+        {/* <Text>{JSON.stringify(conversionPair)}</Text> */}
+        <CurrencyCard
+          item={{
+            name: conversionPair.base.name,
+            code: conversionPair.base.currency,
+            flag: conversionPair.base.unicodeFlag,
+            type: "base"
+          }}
+        />
 
         <View style={styles.buttonsWrap}>
           <View style={styles.equalButtonWrap}>
             <FontAwesome5 name="equals" style={styles.equalButtonText} />
           </View>
-          <TouchableOpacity activeOpacity={0.4} style={styles.switchButton}>
+          <TouchableOpacity
+            activeOpacity={0.4}
+            style={styles.switchButton}
+            onPress={() => switchCurrencies()}
+          >
             <MaterialIcons name="swap-vert" style={styles.switchButtonIcon} />
             <Text style={styles.switchButtonText}>Switch currencies</Text>
           </TouchableOpacity>
         </View>
 
-        <CurrencyCard item={{ name: conversion.target.name, code: conversion.target.code }}/>
+        <CurrencyCard
+          item={{
+            name: conversionPair.target.name,
+            code: conversionPair.target.currency,
+            flag: conversionPair.target.unicodeFlag,
+            type: "target"
+          }}
+        />
 
         <View style={{ marginTop: 30 }}>
           <View
@@ -87,7 +144,10 @@ export default function Flipper({ navigation }) {
             <Text style={[styles.bodyText, { fontWeight: "700" }]}>
               Conversion Rate &bull;
             </Text>
-            <Text style={[styles.bodyText]}>1 {conversion.base.code} &#8776; {conversion.rate} {conversion.target.code}</Text>
+            <Text style={[styles.bodyText]}>
+              1 {conversionPair.base.currency} &#8776; {conversion.rate}{" "}
+              {conversionPair.target.currency}
+            </Text>
           </View>
           <View style={styles.info}>
             <Text style={styles.bodyText}>
@@ -160,7 +220,9 @@ const styles = StyleSheet.create({
     width: 45,
     height: 30,
     borderRadius: 5,
-    backgroundColor: "#eee",
+    // backgroundColor: "#eee",
+    // alignItems: "center",
+    justifyContent: "center",
   },
   bodyText: {
     color: Colors.muted,
@@ -200,7 +262,7 @@ const styles = StyleSheet.create({
   },
   currencyMeta: {
     alignItems: "flex-start",
-    marginLeft: 10,
+    marginLeft: 0,
   },
   currencyShortcode: {
     fontSize: 16,
